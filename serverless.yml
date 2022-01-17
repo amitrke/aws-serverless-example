@@ -65,7 +65,9 @@ functions:
         type: dynamodb
         batchSize: 1
         startingPosition: LATEST
-        arn: !GetAtt LoanTable.StreamArn
+        arn:
+          Fn::GetAtt: [ LoanTable, StreamArn ]
+        # arn: !GetAtt LoanTable.StreamArn
         # arn:
         #   Fn::GetAtt:
         #     - LoanTable
@@ -81,6 +83,15 @@ functions:
           - dynamodb:ListStreams
           - dynamodb:UpdateItem
         Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/LoanTable"
+      - Effect: "Allow"        
+        Action:
+          - dynamodb:GetRecords
+          - dynamodb:GetShardIterator
+          - dynamodb:DescribeStream
+          - dynamodb:ListShards
+          - dynamodb:ListStreams
+        Resource:
+          Fn::GetAtt: [ LoanTable, StreamArn ]
 
 #      - websocket: $connect
 #      - s3: ${env:BUCKET}
