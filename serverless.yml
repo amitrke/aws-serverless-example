@@ -3,7 +3,9 @@ service: awssls
 provider:
   name: aws
   runtime: nodejs14.x
-
+  region: us-east-1
+  stage: dev
+  
 plugins:
   - serverless-offline
   - serverless-iam-roles-per-function
@@ -62,11 +64,17 @@ functions:
     handler: src/dblistner.dblistner
     events:
       - stream:
-        type: dynamodb
-        batchSize: 1
-        startingPosition: LATEST
-        arn:
-          Fn::GetAtt: [ LoanTable, StreamArn ]
+          type: dynamodb
+          batchSize: 50
+          startingPosition: LATEST
+          arn:
+            Fn::GetAtt: [ LoanTable, StreamArn ]
+          filterPatterns:
+            - eventName: [INSERT,MODIFY]
+              dynamodb:
+                NewImage:
+                  status:
+                    S: ['New']
         # arn: !GetAtt LoanTable.StreamArn
         # arn:
         #   Fn::GetAtt:
